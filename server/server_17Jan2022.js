@@ -147,26 +147,6 @@ app.prepare().then(async () => {
     pool.query("INSERT INTO ciauth(storeid, authtoken, storeorigin) VALUES ('" + storeid + "', '" + CIAccessToken + "', '" + CIShopOrigin + "')", (err, res) => {
       console.log('Inserted');
     });
-
-    // pool.query("SELECT id FROM ciauth WHERE storeid = '"+storeid +"'", function(err, result){
-    //   pool.query("INSERT INTO ciauth(storeid, authtoken, storeorigin)VALUES('"+storeid+"', '"+CIAccessToken+"', '"+CIShopOrigin+"')",
-    //     (err, res) => {
-    //     console.log('Token registered into DB ');
-    //   });
-
-    //   if(result.rowCount == 0){
-    //     pool.query("INSERT INTO ciauth(storeid, authtoken, storeorigin)VALUES('"+storeid+"', '"+CIAccessToken+"', '"+CIShopOrigin+"')",
-    //       (err, res) => {
-    //       console.log('Token registered into DB ');
-    //     });   
-    //   }else{  
-    //     pool.query("UPDATE ciauth SET authtoken = '"+CIAccessToken+"' WHERE storeid = '"+storeid+"'", (err, res) => {
-    //       // console.log(err, res);
-    //     });
-    //     console.log('Token updated ');
-    //   }
-    // });
-
     ctx.body = 'success';
     ctx.status = 200;
   });
@@ -179,14 +159,10 @@ app.prepare().then(async () => {
   router.get("/CalculateShipping/:object", async (ctx) => {
    // console.log('Calculate Shipping', ctx.params.object);
     const shippingToken = ctx.params.object;    
-
     const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
     if (result || result.rows) {
       let authtoken = result.rows[0]['authtoken'];
-
-      console.log('authtoken ====================== ', authtoken);
-
-
+      //console.log('authtoken ====================== ', authtoken);
       const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
       const data = await client.get({
         path: 'checkouts/' + shippingToken + '/shipping_rates',
@@ -200,32 +176,16 @@ app.prepare().then(async () => {
       ctx.status = 200;
     }
   });
-
-
   /**
    * retrieves a checkouts
    */
-
     router.get("/retrievescheckout/:object", async (ctx) => {
-      console.log('Get details Shipping', ctx.params.object);
+      //console.log('Get details Shipping', ctx.params.object);
       const shippingToken = ctx.params.object;   
-
-    // if (!ctx.request.body) {
-    //   ctx.body = [{ 'message': 'no items in the cart' }];
-    //   console.log('Payment is initiated', ctx.request.body);
-    // }
-
-     const Checkout_token = ctx.params.object;
-   // const Checkout_token = '66f30e64bb7a15ebce1503c9217216b3';
-
-
-   console.log('Get <<<<<<<<<<<<< ++++++++++++++++++++++++++++++++  ',Checkout_token);
-
-    const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
+      const Checkout_token = ctx.params.object;
+      const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
     if (result || result.rows) {
       let authtoken = result.rows[0]['authtoken'];
-
-
       const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
       const dataret = await client.get({
         path: 'checkouts/'+Checkout_token,
@@ -233,37 +193,27 @@ app.prepare().then(async () => {
         .then(data => {
           ctx.body = data;
           ctx.status = 200;
-          console.log("Checkout get >>>>>>>>>>>>>>>>>>>", dataret);
         });
     } else {
       ctx.body = [];
       ctx.status = 200;
     }
-   
   });
-
-
-
   /**
    * Initiate Payment Gateway
    */
   router.post("/InitiatePayment", koaBody(), async (ctx) => {
-
     if (!ctx.request.body) {
       ctx.body = [{ 'message': 'no items in the cart' }];
-      console.log('Payment is initiated', ctx.request.body);
+     // console.log('Payment is initiated', ctx.request.body);
     }
-
     const orderToken = ctx.request.body[0].token;
     const ordertotal = ctx.request.body[0].total;
-
     let PartnerCode = 'shopify-test';
     let secretKey = 'xiv1ibz7udg2hmg28f4pz2wphdegi84r9';
     let payloadString = "currencyType=INR|orderReference=" + orderToken + "|txnAmount=" + ordertotal + "";
     let reqURL = "https://demo.retail.cipay.inspirenetz.com/loyaltypg/public/payment/" + PartnerCode + "/initiate";
-
     const crypto = require('crypto');
-
     const hash = crypto.createHmac('sha256', secretKey)
       .update(payloadString)
       .digest('hex');
@@ -275,7 +225,6 @@ app.prepare().then(async () => {
       'currencyType': 'INR',
       'checkSum': hash
     });
-
     var config = {
       method: 'post',
       url: reqURL,
@@ -284,7 +233,6 @@ app.prepare().then(async () => {
       },
       data: payloadObject
     };
-
     const res = await axios(config)
       .then(function (response) {
         return response.data;
@@ -293,33 +241,23 @@ app.prepare().then(async () => {
         console.log('Payment Error');
         return error;
       });
-
-    console.log('Payment Gateway Response Data', res);
+   // console.log('Payment Gateway Response Data', res);
     ctx.body = res;
     ctx.status = 200;
   });
-
   /**
    * Checkout API to Generate Checkout ID (token)
    */
   router.post("/CICheckout", koaBody(), async (ctx) => {
-
     if (!ctx.request.body) {
       ctx.body = [{ 'message': 'no items in the cart' }];
     }
     const checkoutData1 = ctx.request.body;
     const lineItems = checkoutData1.line_items;
-
-    //console.log("checkoutData1 >>>>>>>>>>>>>>>>>>>>>>>> ", checkoutData1);
-
-
     const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
-
     if (result || result.rows) {
       console.log('inside rows if');
       let authtoken = result.rows[0]['authtoken'];
-
-
       const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
       const checkoutdata = await client.post({
         path: 'checkouts',
@@ -329,7 +267,6 @@ app.prepare().then(async () => {
       .then(data => {
         ctx.body = data;
         ctx.status = 200;
-       // console.log('Checkout  created ststics >>>>>>>>>>>>>>>> ', [checkoutdata]);
       });
     } else {
       ctx.body = [{ 'message': 'You are not authorised!' }];
@@ -337,14 +274,10 @@ app.prepare().then(async () => {
     }
    
   });
-
-
- 
   /**
    * Create Order API to create new order
    */
   router.post("/CIOrder", koaBody(), async (ctx) => {
-
     if (!ctx.request.body) {
       ctx.body = [{ 'message': 'no items in the cart' }];
     }
@@ -371,42 +304,52 @@ app.prepare().then(async () => {
         });
       ctx.body = orderdata;
       ctx.status = 200;
-      //console.log('orderdata  created', orderdata);
     } else {
       ctx.body = [{ 'message': 'You are not authorised!' }];
       ctx.status = 200;
     }
   });
 
+  /**
+   * Retrive Discount rules
+   */
+   router.get("/retrievesdiscount", async (ctx) => {
+    const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
+   if (result || result.rows) {
+     let authtoken = result.rows[0]['authtoken'];
+     const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
+     const data = await client.get({
+       path: 'price_rules',
+     }).then(data => {
+         ctx.body = data;
+         ctx.status = 200;
+       });
+   } else {
+     ctx.body = erroe;
+     ctx.status = 200;
+   }
+ });
 
 /**
    * Retrive Order API to create new order
    */
   router.get("/retrievesorder/:object", async (ctx) => {
-    console.log('Get order', ctx.params.object);
    const orderid = ctx.params.object;
    const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
   if (result || result.rows) {
     let authtoken = result.rows[0]['authtoken'];
-
     const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
     const data = await client.get({
       path: 'orders/'+orderid,
-    })
-      .then(data => {
+    }).then(data => {
         ctx.body = data;
         ctx.status = 200;
-        console.log("Order get >>>>>>>>>>>>>>>>>>>", data);
       });
   } else {
     ctx.body = [];
     ctx.status = 200;
   }
- 
 });
-
-
-
   /**
    * Update Order API to create new order
    */
@@ -415,84 +358,76 @@ app.prepare().then(async () => {
         ctx.body = [{ 'message': 'no data' }];
       }
       const orderid = ctx.request.body.order.id;
-
       console.log('order detail send', ctx.request.body.order);
-    
       const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
       if (result || result.rows) {
-        console.log('inside rows if');
         let authtoken = result.rows[0]['authtoken'];
-
         const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
         const orderdataUp = await client.put({
           path: 'orders/'+orderid,
           data: {
-               "order":ctx.request.body.order
+                "order":ctx.request.body.order
           },
           type: DataType.JSON
-        })
-          .then(data => {
+        }).then(data => {
             return data;
           });
         ctx.body = orderdataUp;
         ctx.status = 200;
-        console.log('orderdata updated', orderdataUp);
+        console.log('order detail response ---------------------------- ', orderdataUp);
       } else {
         ctx.body = [{ 'message': 'You are not authorised!' }];
         ctx.status = 200;
       }
     });
-
-
-      /**
+  /**
    * Create Transaction API to create new order
    */
   router.post("/CITransaction", koaBody(), async (ctx) => {
-
     if (!ctx.request.body) {
       ctx.body = [{ 'message': 'no items in the cart' }];
     }
-    // const order_id = ctx.request.body.transaction.order_id;
-
-    // console.log("Transaction Body  ", ctx.request.body);
-
-    // console.log("Transaction id +++++++++++++  ", order_id);
-
-
-   // console.log("Transaction >>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<< ", ctx.request.body.transaction);
-   
-   console.log("Transaction fire --------- +++++++++++++  ");
+     const order_id = ctx.request.body.transaction.order_id;
+     console.log("Transaction id +++++++++++++  ", order_id);
+     console.log("Transaction >>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<< ", ctx.request.body);
 
     const result = await pool.query("SELECT authtoken FROM ciauth WHERE storeorigin = '"+process.env.SHOP+"' ORDER BY id DESC LIMIT 1");
     if (result || result.rows) {
       let authtoken = result.rows[0]['authtoken'];
       const client = new Shopify.Clients.Rest(process.env.SHOP, authtoken);
-      // const orderTrdata = await client.post({
-      //  // path: 'orders/'+order_id+'/transactions',
-      //   path: 'orders/4195680714940/transactions',
-      //   data: {
-      //     "transaction":{"currency":"USD","amount":"10.00","kind":"capture","parent_id":4195680714940}
-      // }
-      
-      // ,
-      //   type: DataType.JSON
-      // })
       const data = await client.post({
-        path: 'orders/4195680714940/transactions',
-        data: {"transaction":{"currency":"INR","amount":"10.00","kind":"capture"}},
+        path: 'orders/'+order_id+'/transactions',
+        data: ctx.request.body,
         type: DataType.JSON,
-      })
-        .then(data => {
+      }).then(data => {
           return data;
         });
-      ctx.body = orderTrdata;
+      ctx.body = data;
       ctx.status = 200;
-      console.log('orderTrdata  created data', orderTrdata);
+      console.log('orderTrdata  created data', data);
     } else {
       ctx.body = [{ 'message': 'You are not authorised!' }];
       ctx.status = 200;
     }
   });
+
+
+    /**
+   * Success payment callback
+   */
+     router.post("/callback_cipayment/success", koaBody(), async (ctx) => {
+      if (!ctx.request.body) {
+        ctx.body = [{ 'message': 'No data here' }];
+      }
+      else{
+        ctx.body = "success";
+        ctx.status = 200;
+        const conditionget = ctx.params.object;    
+        console.log('Payment conditionget: ', conditionget);
+        console.log('Payment Detail: ', ctx.request.body);
+      
+      }
+    });
 
   /**
    * Checkout API to Complete an Order
@@ -529,7 +464,6 @@ app.prepare().then(async () => {
    * Save Payment gateway Setting
    */
   router.post("/PaymentGatewaySetting", koaBody(), async (ctx) => {
-
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     ctx.cookies.set('CIShopOrigin', session.shop, {
       httpOnly: false,
@@ -619,7 +553,6 @@ app.prepare().then(async () => {
     }
 
   });
-
   router.get("/Modelive", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     ctx.cookies.set('CIShopOrigin', session.shop, {
@@ -660,17 +593,13 @@ app.prepare().then(async () => {
       ctx.status = 200;
     }
   });
-  
   /**
    * Custom Route to fetch all products for Sales Channel 
    */
   router.get("/product_listings", async (ctx) => {
     console.log('product listing calling');
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    // Create a new client for the specified shop.
     const client = new Shopify.Clients.Rest(session.shop, session.accessToken);
-    // const client = new Shopify.Clients.Rest('tisrr.myshopify.com', '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');
-    // Use `client.get` to request the specified Shopify REST API endpoint, in this case `products`.
     const product_listings = await client.get({
       path: 'product_listings',
     });
@@ -683,10 +612,7 @@ app.prepare().then(async () => {
   router.get("/products", async (ctx) => {
     console.log('products calling');
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    // Create a new client for the specified shop.
-    // const client = new Shopify.Clients.Rest('tisrr.myshopify.com', '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');
     const client = new Shopify.Clients.Rest(session.shop, session.accessToken);
-    // Use `client.get` to request the specified Shopify REST API endpoint, in this case `products`.
     const products = await client.get({
       path: 'products',
     });

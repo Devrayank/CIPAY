@@ -425,6 +425,7 @@ app.prepare().then(async () => {
         const conditionget = ctx.params.object;    
         console.log('Payment conditionget: ', conditionget);
         console.log('Payment Detail: ', ctx.request.body);
+        
       
       }
     });
