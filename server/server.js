@@ -413,19 +413,38 @@ app.prepare().then(async () => {
 
 
     /**
-   * Update Order API to create new order
+   * Success payment callback
    */
-     router.post("/callback_cipayment", koaBody(), async (ctx) => {
+     router.post("/callback_cipayment/success", koaBody(), async (ctx) => {
       if (!ctx.request.body) {
         ctx.body = [{ 'message': 'No data here' }];
       }
       else{
-        ctx.body = "success";
+        ctx.body = "payment success";
         ctx.status = 200;
+        const conditionget = ctx.params.object;    
+        console.log('Payment conditionget: ', conditionget);
         console.log('Payment Detail: ', ctx.request.body);
       
       }
     });
+
+ /**
+   * Success payment callback
+   */
+         router.post("/callback_cipayment/failed", koaBody(), async (ctx) => {
+          if (!ctx.request.body) {
+            ctx.body = [{ 'message': 'No data here' }];
+          }
+          else{
+            ctx.body = "payment fail";
+            ctx.status = 200;
+            const conditionget = ctx.params.object;    
+            console.log('Payment conditionget: ', conditionget);
+            console.log('Payment Detail: ', ctx.request.body);
+          
+          }
+        });
 
   /**
    * Checkout API to Complete an Order
