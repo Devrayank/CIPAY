@@ -1,0 +1,112 @@
+* {box-sizing: border-box}
+.Polaris-Page{max-width: 100%;}
+
+#gateway-pay label, #gateway-pay button, #gateway-pay p{
+  font-size: 16px;
+}
+
+#emailHelp {
+  font-size: 13px;
+}
+
+#gateway-pay input{
+  padding: 19px 11px;
+    font-size: 16px;
+}
+#rightbar .tabbtn button{
+  padding: 7px 9px;
+    display: inline-block;
+    border: 0;
+}
+#payment-method .custom-switch .custom-control-label::before{
+  border-radius: 0.8rem;
+  height: 15px;
+  width: 29px;
+}
+/* .custom-switch .custom-control-label::after{
+  top: calc(0.25rem + 3px);
+  left: calc(-1.25rem + 0px);
+  width: calc(1rem - 1px);
+  height: calc(1rem - 1px);
+} */
+#payment-method label.custom-control-label {
+  padding-left: 14px;
+}
+
+div#sidebar-tab button:hover,div#sidebar-tab button:focus{
+  background-color: #c7c7c7;
+}
+#rightbar .custom-switch .custom-control-input:checked~.custom-control-label::after{
+  transform: translateX(1.3rem);
+}
+#toogle.custom-control-label:after{
+  top: calc(0.25rem + 3px);
+    left: calc(-2.25rem + 3px);
+    width: calc(1rem - 1px);
+    height: calc(1rem - 1px);
+}
+#toogle.custom-control-label.toggleclass:after{ 
+  top: calc(0.25rem + 3px);
+    left: calc(-2.25rem + 10px);
+    width: calc(1rem - 1px);
+    height: calc(1rem - 1px);
+}
+    body {font-family: "Lato", sans-serif;}
+    .tab {
+    float: left;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    width: 22%;
+    height: 300px;
+    }
+    .payment-tabs .tab button {
+    display: block;
+    background-color: inherit;
+    color: black;
+    padding: 22px 16px;
+    width: 100%;
+    border: none;
+    outline: none;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 17px;
+    }
+    .payment-tabs .tab button:hover {
+    background-color: #ddd;
+    }
+    #gateway-pay.payment-tabs .tab button.active,#gateway-pay  .pay-btn {
+    background-image: linear-gradient(109deg, #673AFF 0%, #7D81FF 100%);
+    color: #fff;
+    }
+
+    .pay-buttn {
+      background-image: linear-gradient(109deg, white 0%, white 100%);
+      color: #fff;
+      }
+
+    .payment-tabs .tabcontent {
+    float: left;
+    padding: 0px 12px;
+    height: auto;
+    }
+
+    .nonactive {
+      display: none;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .tabdev {
+      margin-right: 29px;
+    padding: 5%;
+    }
+
+    .text-light{
+      color: #fff;
+    } 
+    #rightbar button[type=submit] {
+        padding: 7px 33px;
+    } 

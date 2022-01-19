@@ -1,0 +1,5 @@
+SHOPIFY_API_KEY=d14acf4acdaad8cebd5fcf118899105a
+SHOPIFY_API_SECRET=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
+SHOP=tis24.myshopify.com
+SCOPES=write_products,write_customers,write_draft_orders
+HOST=https://49d2-115-166-143-82.ngrok.io
